@@ -1,14 +1,16 @@
 {
-  "name": "SoundWave - Music Discovery",
+  "name": "SoundWave - Music Discovery App",
   "short_name": "SoundWave",
-  "description": "Discover and play your favorite music with SoundWave",
+  "description": "Discover your next favorite song. Explore millions of tracks and create personalized playlists.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e1b4b",
   "theme_color": "#8b5cf6",
   "orientation": "portrait-primary",
   "categories": ["music", "entertainment"],
-  "lang": "th",
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
@@ -61,28 +63,29 @@
   ],
   "shortcuts": [
     {
-      "name": "Search Music",
-      "short_name": "Search",
-      "description": "Search for songs and artists",
-      "url": "/?action=search",
+      "name": "Discover Music",
+      "short_name": "Discover",
+      "description": "Find new music and trending tracks",
+      "url": "/?action=discover",
       "icons": [
         {
-          "src": "/icons/search-icon.png",
+          "src": "/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
     },
     {
-      "name": "Trending",
-      "short_name": "Trending",
-      "description": "View trending music",
-      "url": "/?action=trending",
+      "name": "My Playlists",
+      "short_name": "Playlists",
+      "description": "Access your personal playlists",
+      "url": "/?action=playlists",
       "icons": [
         {
-          "src": "/icons/trending-icon.png",
+          "src": "/icons/icon-96x96.png",
           "sizes": "96x96"
         }
       ]
     }
-  ]
+  ],
+  "prefer_related_applications": false
 } 

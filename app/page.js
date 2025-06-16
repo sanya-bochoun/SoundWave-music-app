@@ -6,6 +6,8 @@ import Hero from './components/Hero'
 import FeaturedPlaylists from './components/FeaturedPlaylists'
 import TrendingTracks from './components/TrendingTracks'
 import Footer from './components/Footer'
+import PWAInstallPrompt from './components/PWAInstallPrompt'
+import PWAStatus from './components/PWAStatus'
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -34,6 +36,10 @@ export default function Home() {
           <TrendingTracks />
         </main>
         <Footer />
+        
+        {/* PWA Components */}
+        <PWAInstallPrompt />
+        <PWAStatus />
       </div>
     </div>
   )
