@@ -1,168 +1,101 @@
-const CACHE_NAME = 'soundwave-v1';
-const urlsToCache = [
-  '/',
-  '/manifest.json',
-  // Static assets จะถูก cache อัตโนมัติโดย Next.js
-];
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// Install event - cache resources
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installing Service Worker');
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('[SW] Service Worker installed successfully');
-        return self.skipWaiting();
-      })
-  );
-});
+// If the loader is already loaded, just stop.
+if (!self.define) {
+  let registry = {};
 
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating Service Worker');
-  
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
+  // Used for `eval` and `importScripts` where we can't get script URL by other means.
+  // In both cases, it's safe to use a global var because those functions are synchronous.
+  let nextDefineUri;
+
+  const singleRequire = (uri, parentUri) => {
+    uri = new URL(uri + ".js", parentUri).href;
+    return registry[uri] || (
+      
+        new Promise(resolve => {
+          if ("document" in self) {
+            const script = document.createElement("script");
+            script.src = uri;
+            script.onload = resolve;
+            document.head.appendChild(script);
+          } else {
+            nextDefineUri = uri;
+            importScripts(uri);
+            resolve();
           }
         })
-      );
-    }).then(() => {
-      console.log('[SW] Service Worker activated');
-      return self.clients.claim();
-    })
-  );
-});
-
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // Skip external requests (like Supabase API)
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
-          console.log('[SW] Serving from cache:', event.request.url);
-          return response;
+      
+      .then(() => {
+        let promise = registry[uri];
+        if (!promise) {
+          throw new Error(`Module ${uri} didn’t register its module`);
         }
-
-        console.log('[SW] Fetching from network:', event.request.url);
-        return fetch(event.request).then((response) => {
-          // Don't cache non-successful responses
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
-        });
+        return promise;
       })
-      .catch(() => {
-        // Return offline page for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
-      })
-  );
-});
-
-// Background sync for music queue
-self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync:', event.tag);
-  
-  if (event.tag === 'music-queue-sync') {
-    event.waitUntil(syncMusicQueue());
-  }
-});
-
-// Push notifications for new music releases
-self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'New music available!',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    vibrate: [100, 50, 100],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: '2'
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Listen Now',
-        icon: '/icons/play-icon.png'
-      },
-      {
-        action: 'close',
-        title: 'Close',
-        icon: '/icons/close-icon.png'
-      }
-    ]
+    );
   };
 
-  event.waitUntil(
-    self.registration.showNotification('🎵 SoundWave', options)
-  );
-});
+  self.define = (depsNames, factory) => {
+    const uri = nextDefineUri || ("document" in self ? document.currentScript.src : "") || location.href;
+    if (registry[uri]) {
+      // Module is already loading or loaded.
+      return;
+    }
+    let exports = {};
+    const require = depUri => singleRequire(depUri, uri);
+    const specialDeps = {
+      module: { uri },
+      exports,
+      require
+    };
+    registry[uri] = Promise.all(depsNames.map(
+      depName => specialDeps[depName] || require(depName)
+    )).then(deps => {
+      factory(...deps);
+      return exports;
+    });
+  };
+}
+define(['./workbox-e43f5367'], (function (workbox) { 'use strict';
 
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification click received.');
+  importScripts();
+  self.skipWaiting();
+  workbox.clientsClaim();
+  workbox.registerRoute("/", new workbox.NetworkFirst({
+    "cacheName": "start-url",
+    plugins: [{
+      cacheWillUpdate: async ({
+        request,
+        response,
+        event,
+        state
+      }) => {
+        if (response && response.type === 'opaqueredirect') {
+          return new Response(response.body, {
+            status: 200,
+            statusText: 'OK',
+            headers: response.headers
+          });
+        }
+        return response;
+      }
+    }]
+  }), 'GET');
+  workbox.registerRoute(/.*/i, new workbox.NetworkOnly({
+    "cacheName": "dev",
+    plugins: []
+  }), 'GET');
 
-  event.notification.close();
-
-  if (event.action === 'explore') {
-    // Open app to trending page
-    event.waitUntil(
-      clients.openWindow('/?action=trending')
-    );
-  } else if (event.action === 'close') {
-    // Just close the notification
-    return;
-  } else {
-    // Open app to homepage
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
-});
-
-// Helper function for background sync
-async function syncMusicQueue() {
-  try {
-    console.log('[SW] Syncing music queue...');
-    // Here you would sync any offline music queue with the server
-    // For now, just log success
-    console.log('[SW] Music queue synced successfully');
-  } catch (error) {
-    console.error('[SW] Music queue sync failed:', error);
-    throw error;
-  }
-} 
+}));
+//# sourceMappingURL=sw.js.map

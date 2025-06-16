@@ -1,55 +1,102 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Play, Heart, Download, Share2, TrendingUp } from 'lucide-react'
+import { useAudio } from '../../contexts/AudioContext'
+import { musicAPI } from '../../lib/supabase'
 
 export default function TrendingTracks() {
-  const tracks = [
-    {
-      id: 1,
-      title: "Starlight Symphony",
-      artist: "Luna Waves",
-      album: "Cosmic Echoes",
-      duration: "3:42",
-      plays: "2.4M",
-      trend: "+12%"
-    },
-    {
-      id: 2,
-      title: "Digital Dreams",
-      artist: "Neon Circuit",
-      album: "Electric Nights",
-      duration: "4:15",
-      plays: "1.8M",
-      trend: "+8%"
-    },
-    {
-      id: 3,
-      title: "Ocean Breeze",
-      artist: "Aqua Sound",
-      album: "Natural Elements",
-      duration: "3:28",
-      plays: "3.1M",
-      trend: "+15%"
-    },
-    {
-      id: 4,
-      title: "Midnight Drive",
-      artist: "Urban Pulse",
-      album: "City Lights",
-      duration: "4:03",
-      plays: "1.9M",
-      trend: "+6%"
-    },
-    {
-      id: 5,
-      title: "Fire & Ice",
-      artist: "Elemental",
-      album: "Contrasts",
-      duration: "3:51",
-      plays: "2.7M",
-      trend: "+18%"
+  const [tracks, setTracks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { actions: audioActions, currentTrack, isPlaying } = useAudio()
+
+  // Load trending tracks from database
+  useEffect(() => {
+    const loadTracks = async () => {
+      try {
+        const data = await musicAPI.getTrendingSongs()
+        setTracks(data || [])
+      } catch (error) {
+        console.error('Error loading trending tracks:', error)
+        // Fallback to static data
+        setTracks([
+          {
+            id: 1,
+            title: "Starlight Symphony",
+            artist: "Luna Waves",
+            album: "Cosmic Echoes",
+            duration: 222,
+            plays: 2400000,
+            trend: "+12%"
+          },
+          {
+            id: 2,
+            title: "Digital Dreams",
+            artist: "Neon Circuit",
+            album: "Electric Nights",
+            duration: 255,
+            plays: 1800000,
+            trend: "+8%"
+          },
+          {
+            id: 3,
+            title: "Ocean Breeze",
+            artist: "Aqua Sound",
+            album: "Natural Elements",
+            duration: 208,
+            plays: 3100000,
+            trend: "+15%"
+          },
+          {
+            id: 4,
+            title: "Midnight Drive",
+            artist: "Urban Pulse",
+            album: "City Lights",
+            duration: 243,
+            plays: 1900000,
+            trend: "+6%"
+          },
+          {
+            id: 5,
+            title: "Fire & Ice",
+            artist: "Elemental",
+            album: "Contrasts",
+            duration: 231,
+            plays: 2700000,
+            trend: "+18%"
+          }
+        ])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    loadTracks()
+  }, [])
+
+  // Format duration helper
+  const formatDuration = (seconds) => {
+    if (typeof seconds === 'string') return seconds
+    const minutes = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${minutes}:${secs.toString().padStart(2, '0')}`
+  }
+
+  // Format plays helper
+  const formatPlays = (plays) => {
+    if (typeof plays === 'string') return plays
+    if (plays >= 1000000) {
+      return `${(plays / 1000000).toFixed(1)}M`
+    } else if (plays >= 1000) {
+      return `${(plays / 1000).toFixed(1)}K`
+    }
+    return plays.toString()
+  }
+
+  // Handle play track
+  const handlePlayTrack = (track, index) => {
+    audioActions.playTrack(track, tracks, index)
+  }
 
   return (
     <section className="py-20">
@@ -94,7 +141,14 @@ export default function TrendingTracks() {
                     <div className="flex items-center justify-center w-8 h-8 text-lg font-bold text-gray-400 group-hover:text-white transition-colors duration-300">
                       {index + 1}
                     </div>
-                    <button className="lg:opacity-0 group-hover:opacity-100 bg-green-500 hover:bg-green-600 p-2 rounded-full transition-all duration-300 transform hover:scale-105">
+                    <button 
+                      onClick={() => handlePlayTrack(track, index)}
+                      className={`lg:opacity-0 group-hover:opacity-100 p-2 rounded-full transition-all duration-300 transform hover:scale-105 ${
+                        currentTrack?.id === track.id && isPlaying
+                          ? 'bg-purple-500 hover:bg-purple-600 opacity-100'
+                          : 'bg-green-500 hover:bg-green-600'
+                      }`}
+                    >
                       <Play className="h-4 w-4 text-white fill-current ml-0.5" />
                     </button>
                   </div>
@@ -119,15 +173,15 @@ export default function TrendingTracks() {
 
                   {/* Duration */}
                   <div className="lg:col-span-1 hidden lg:block">
-                    <p className="text-gray-400">{track.duration}</p>
+                    <p className="text-gray-400">{formatDuration(track.duration)}</p>
                   </div>
 
                   {/* Plays & Trend */}
                   <div className="lg:col-span-2 flex flex-col lg:flex-row lg:items-center lg:space-x-2">
-                    <span className="text-gray-300 font-medium">{track.plays}</span>
+                    <span className="text-gray-300 font-medium">{formatPlays(track.plays)}</span>
                     <span className="text-green-400 text-sm font-medium flex items-center">
                       <TrendingUp className="h-3 w-3 mr-1" />
-                      {track.trend}
+                      {track.trend || '+0%'}
                     </span>
                   </div>
 
@@ -148,7 +202,7 @@ export default function TrendingTracks() {
                 {/* Mobile Info */}
                 <div className="lg:hidden mt-3 flex items-center justify-between text-sm text-gray-400">
                   <span>{track.album}</span>
-                  <span>{track.duration}</span>
+                  <span>{formatDuration(track.duration)}</span>
                 </div>
               </div>
             ))}

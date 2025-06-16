@@ -3,12 +3,16 @@
 import { Play, Shuffle, Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { musicAPI } from '../../lib/supabase'
+import { useAudio } from '../../contexts/AudioContext'
 
 export default function Hero() {
   // เพิ่ม state สำหรับทดสอบ Supabase
   const [dbConnected, setDbConnected] = useState(false)
   const [sampleSongs, setSampleSongs] = useState([])
   const [connectionError, setConnectionError] = useState(null)
+  
+  // Audio context
+  const { actions: audioActions } = useAudio()
 
   // ทดสอบการเชื่อมต่อ Supabase
   useEffect(() => {
@@ -157,9 +161,18 @@ export default function Hero() {
                   )}
                 </div>
 
-                <button className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-full transition-all duration-300 flex items-center justify-center space-x-2">
+                <button 
+                  onClick={() => {
+                    if (dbConnected && sampleSongs.length > 0) {
+                      // เล่นเพลงแรกใน Today's Mix
+                      audioActions.playTrack(sampleSongs[0], sampleSongs, 0)
+                    }
+                  }}
+                  disabled={!dbConnected || sampleSongs.length === 0}
+                  className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-full transition-all duration-300 flex items-center justify-center space-x-2"
+                >
                   <Play className="h-5 w-5 fill-current" />
-                  <span>Play All</span>
+                  <span>{dbConnected ? 'Play All' : 'Loading...'}</span>
                 </button>
 
                 {/* Debug info */}

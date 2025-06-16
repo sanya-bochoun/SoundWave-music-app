@@ -8,6 +8,7 @@ import TrendingTracks from './components/TrendingTracks'
 import Footer from './components/Footer'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import PWAStatus from './components/PWAStatus'
+import AudioPlayer from './components/AudioPlayer'
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false)
@@ -37,9 +38,12 @@ export default function Home() {
         </main>
         <Footer />
         
-        {/* PWA Components */}
-        <PWAInstallPrompt />
-        <PWAStatus />
+                 {/* PWA Components */}
+         <PWAInstallPrompt />
+         <PWAStatus />
+         
+         {/* Audio Player */}
+         <AudioPlayer />
       </div>
     </div>
   )

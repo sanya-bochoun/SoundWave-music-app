@@ -1,5 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { AudioProvider } from '../contexts/AudioContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -50,8 +51,12 @@ export default function RootLayout({ children }) {
         {/* Microsoft */}
         <meta name="msapplication-TileColor" content="#8b5cf6" />
         <meta name="msapplication-tap-highlight" content="no" />
-      </head>
-      <body className={inter.className}>{children}</body>
-    </html>
+             </head>
+       <body className={inter.className}>
+         <AudioProvider>
+           {children}
+         </AudioProvider>
+       </body>
+     </html>
   )
 }
