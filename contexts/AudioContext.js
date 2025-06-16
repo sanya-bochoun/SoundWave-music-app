@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useReducer, useEffect, useRef } from 'react'
+import { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react'
 
 const AudioContext = createContext()
 
@@ -242,15 +242,108 @@ export function AudioProvider({ children }) {
     }
   }, [state.isPlaying])
   
+  // Play audio
+  const play = useCallback(async (track) => {
+    if (!track) return
+    
+    try {
+      // If same track, just resume
+      if (state.currentTrack?.id === track.id && audioRef.current) {
+        if (state.isPlaying) {
+          audioRef.current.pause()
+          dispatch({ type: 'SET_PLAYING', payload: false })
+        } else {
+          await audioRef.current.play()
+          dispatch({ type: 'SET_PLAYING', payload: true })
+        }
+        return
+      }
+
+      // Set new track
+      dispatch({ type: 'SET_CURRENT_TRACK', payload: track })
+      dispatch({ type: 'SET_LOADING', payload: true })
+      dispatch({ type: 'SET_ERROR', payload: null })
+
+      // Create new audio element
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata)
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate)
+        audioRef.current.removeEventListener('ended', handleEnded)
+        audioRef.current.removeEventListener('error', handleError)
+      }
+
+      const audio = new Audio()
+      
+      // Check if audio URL exists
+      if (!track.audio_url) {
+        throw new Error('ไม่พบไฟล์เสียงสำหรับเพลงนี้')
+      }
+
+      audio.src = track.audio_url
+      audio.crossOrigin = 'anonymous' // Handle CORS
+      audioRef.current = audio
+
+      // Add event listeners
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata)
+      audio.addEventListener('timeupdate', handleTimeUpdate)
+      audio.addEventListener('ended', handleEnded)
+      audio.addEventListener('error', handleError)
+      
+      // Additional error handling for network issues
+      audio.addEventListener('loadstart', () => {
+        console.log('🎵 เริ่มโหลดเพลง:', track.title)
+      })
+      
+      audio.addEventListener('canplay', () => {
+        console.log('✅ เพลงพร้อมเล่น:', track.title)
+        dispatch({ type: 'SET_LOADING', payload: false })
+      })
+
+      // Try to play
+      await audio.play()
+      dispatch({ type: 'SET_PLAYING', payload: true })
+      dispatch({ type: 'SET_LOADING', payload: false })
+      
+      console.log('🎵 เล่นเพลง:', track.title)
+
+    } catch (error) {
+      console.error('Audio play failed:', error)
+      dispatch({ type: 'SET_LOADING', payload: false })
+      dispatch({ type: 'SET_PLAYING', payload: false })
+      
+      // User-friendly error messages
+      let errorMessage = 'ไม่สามารถเล่นเพลงได้'
+      
+      if (error.name === 'NotSupportedError') {
+        errorMessage = 'รูปแบบไฟล์เสียงไม่รองรับ หรือไฟล์เสียงไม่สามารถเข้าถึงได้'
+      } else if (error.name === 'NotAllowedError') {
+        errorMessage = 'กรุณาอนุญาตให้เล่นเสียงในเบราว์เซอร์'
+      } else if (error.name === 'AbortError') {
+        errorMessage = 'การเล่นเสียงถูกยกเลิก'
+      } else if (error.message.includes('CORS')) {
+        errorMessage = 'ไม่สามารถเข้าถึงไฟล์เสียงได้ (CORS Policy)'
+      } else if (error.message.includes('network')) {
+        errorMessage = 'ปัญหาการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง'
+      }
+      
+      dispatch({ type: 'SET_ERROR', payload: errorMessage })
+      
+      // Auto-clear error after 5 seconds
+      setTimeout(() => {
+        dispatch({ type: 'SET_ERROR', payload: null })
+      }, 5000)
+    }
+  }, [state.currentTrack, state.isPlaying])
+  
   // Audio Player Actions
   const actions = {
     // Play specific track
     playTrack: (track, queue = [], index = 0) => {
-      dispatch({ type: 'SET_CURRENT_TRACK', payload: track })
       if (queue.length > 0) {
         dispatch({ type: 'SET_QUEUE', payload: { queue, index } })
       }
-      dispatch({ type: 'SET_PLAYING', payload: true })
+      play(track) // Use the improved play function
     },
     
     // Toggle play/pause
