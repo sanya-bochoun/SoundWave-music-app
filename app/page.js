@@ -10,6 +10,7 @@ import AudioPlayer from './components/AudioPlayer'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import PWAStatus from './components/PWAStatus'
 import { supabase, musicAPI } from '../lib/supabase'
+import SupabaseTest from './components/SupabaseTest'
 
 export default function Home() {
   const [connectionStatus, setConnectionStatus] = useState('connecting')
@@ -63,7 +64,10 @@ export default function Home() {
       {/* Main Content */}
       <div className="relative z-10">
         <Header />
-        
+        {/* ทดสอบการเชื่อมต่อ Supabase */}
+        <div className="container mx-auto px-4 py-2">
+          <SupabaseTest />
+        </div>
         {/* Connection Status */}
         <div className="container mx-auto px-4 py-2">
           <div className="text-center">
