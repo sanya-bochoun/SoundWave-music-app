@@ -10,6 +10,7 @@ export default function Hero() {
   const [dbConnected, setDbConnected] = useState(false)
   const [sampleSongs, setSampleSongs] = useState([])
   const [connectionError, setConnectionError] = useState(null)
+  const [mounted, setMounted] = useState(false);
   
   // Audio context
   const { actions: audioActions } = useAudio()
@@ -32,6 +33,9 @@ export default function Hero() {
 
     testConnection()
   }, [])
+
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
 
   return (
     <section className="relative py-20 lg:py-32 overflow-hidden">
@@ -146,17 +150,17 @@ export default function Hero() {
                   ) : (
                     // Fallback data ถ้าไม่เชื่อมต่อ database
                     [
-                      { title: "Electric Dreams", artist: "Neon Pulse", duration: "3:24" },
-                      { title: "Midnight Vibes", artist: "Luna Sound", duration: "4:12" },
-                      { title: "Digital Love", artist: "Cyber Hearts", duration: "3:45" },
-                    ].map((track, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-300 cursor-pointer">
-                        <div>
-                          <div className="font-medium">{track.title}</div>
-                          <div className="text-sm text-gray-400">{track.artist}</div>
-                        </div>
-                        <div className="text-sm text-gray-400">{track.duration}</div>
+                    { title: "Electric Dreams", artist: "Neon Pulse", duration: "3:24" },
+                    { title: "Midnight Vibes", artist: "Luna Sound", duration: "4:12" },
+                    { title: "Digital Love", artist: "Cyber Hearts", duration: "3:45" },
+                  ].map((track, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-300 cursor-pointer">
+                      <div>
+                        <div className="font-medium">{track.title}</div>
+                        <div className="text-sm text-gray-400">{track.artist}</div>
                       </div>
+                      <div className="text-sm text-gray-400">{track.duration}</div>
+                    </div>
                     ))
                   )}
                 </div>

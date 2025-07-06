@@ -7,7 +7,7 @@ export default function SupabaseTest() {
 
   useEffect(() => {
     async function fetchTracks() {
-      const { data, error } = await supabase.from("tracks").select("*").limit(1);
+      const { data, error } = await supabase.from("songs").select("*").limit(1);
       if (error) setError(error.message);
       else setTracks(data);
     }

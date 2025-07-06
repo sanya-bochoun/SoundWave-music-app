@@ -7,8 +7,10 @@ export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // ตรวจสอบว่าเป็น PWA ที่ติดตั้งแล้วหรือยัง
     const checkInstalled = () => {
       // PWA installed
@@ -99,6 +101,8 @@ export default function PWAInstallPrompt() {
   if (dismissedTime && Date.now() - parseInt(dismissedTime) < 24 * 60 * 60 * 1000) {
     return null
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-sm">

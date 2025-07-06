@@ -277,7 +277,7 @@ export function AudioProvider({ children }) {
       
       // Check if audio URL exists
       if (!track.audio_url) {
-        throw new Error('ไม่พบไฟล์เสียงสำหรับเพลงนี้')
+        throw new Error('Audio file not found for this song')
       }
 
       audio.src = track.audio_url
@@ -292,11 +292,11 @@ export function AudioProvider({ children }) {
       
       // Additional error handling for network issues
       audio.addEventListener('loadstart', () => {
-        console.log('🎵 เริ่มโหลดเพลง:', track.title)
+        console.log('🎵 Loading song:', track.title)
       })
       
       audio.addEventListener('canplay', () => {
-        console.log('✅ เพลงพร้อมเล่น:', track.title)
+        console.log('✅ Song ready to play:', track.title)
         dispatch({ type: 'SET_LOADING', payload: false })
       })
 
@@ -305,7 +305,7 @@ export function AudioProvider({ children }) {
       dispatch({ type: 'SET_PLAYING', payload: true })
       dispatch({ type: 'SET_LOADING', payload: false })
       
-      console.log('🎵 เล่นเพลง:', track.title)
+      console.log('🎵 Playing song:', track.title)
 
     } catch (error) {
       console.error('Audio play failed:', error)
@@ -313,18 +313,18 @@ export function AudioProvider({ children }) {
       dispatch({ type: 'SET_PLAYING', payload: false })
       
       // User-friendly error messages
-      let errorMessage = 'ไม่สามารถเล่นเพลงได้'
+      let errorMessage = 'Cannot play song'
       
       if (error.name === 'NotSupportedError') {
-        errorMessage = 'รูปแบบไฟล์เสียงไม่รองรับ หรือไฟล์เสียงไม่สามารถเข้าถึงได้'
+        errorMessage = 'Audio file format not supported or file inaccessible'
       } else if (error.name === 'NotAllowedError') {
-        errorMessage = 'กรุณาอนุญาตให้เล่นเสียงในเบราว์เซอร์'
+        errorMessage = 'Please allow audio playback in your browser'
       } else if (error.name === 'AbortError') {
-        errorMessage = 'การเล่นเสียงถูกยกเลิก'
+        errorMessage = 'Audio playback was aborted'
       } else if (error.message.includes('CORS')) {
-        errorMessage = 'ไม่สามารถเข้าถึงไฟล์เสียงได้ (CORS Policy)'
+        errorMessage = 'Cannot access audio file (CORS Policy)'
       } else if (error.message.includes('network')) {
-        errorMessage = 'ปัญหาการเชื่อมต่อเครือข่าย กรุณาลองใหม่อีกครั้ง'
+        errorMessage = 'Network connection issue, please try again'
       }
       
       dispatch({ type: 'SET_ERROR', payload: errorMessage })

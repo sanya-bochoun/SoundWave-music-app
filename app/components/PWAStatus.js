@@ -7,6 +7,7 @@ export default function PWAStatus() {
   const [isPWA, setIsPWA] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
   const [installationStatus, setInstallationStatus] = useState('browser')
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // ตรวจสอบว่าเป็น PWA หรือไม่
@@ -44,11 +45,15 @@ export default function PWAStatus() {
     window.addEventListener('online', updateOnlineStatus)
     window.addEventListener('offline', updateOnlineStatus)
 
+    setMounted(true);
+
     return () => {
       window.removeEventListener('online', updateOnlineStatus)
       window.removeEventListener('offline', updateOnlineStatus)
     }
   }, [])
+
+  if (!mounted) return null;
 
   const getStatusInfo = () => {
     switch (installationStatus) {

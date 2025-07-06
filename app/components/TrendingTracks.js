@@ -9,8 +9,9 @@ export default function TrendingTracks() {
   const [tracks, setTracks] = useState([])
   const [loading, setLoading] = useState(true)
   const { actions: audioActions, currentTrack, isPlaying } = useAudio()
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  // Load trending tracks from database
   useEffect(() => {
     const loadTracks = async () => {
       try {
@@ -20,51 +21,51 @@ export default function TrendingTracks() {
         console.error('Error loading trending tracks:', error)
         // Fallback to static data
         setTracks([
-          {
-            id: 1,
-            title: "Starlight Symphony",
-            artist: "Luna Waves",
-            album: "Cosmic Echoes",
+    {
+      id: 1,
+      title: "Starlight Symphony",
+      artist: "Luna Waves",
+      album: "Cosmic Echoes",
             duration: 222,
             plays: 2400000,
-            trend: "+12%"
-          },
-          {
-            id: 2,
-            title: "Digital Dreams",
-            artist: "Neon Circuit",
-            album: "Electric Nights",
+      trend: "+12%"
+    },
+    {
+      id: 2,
+      title: "Digital Dreams",
+      artist: "Neon Circuit",
+      album: "Electric Nights",
             duration: 255,
             plays: 1800000,
-            trend: "+8%"
-          },
-          {
-            id: 3,
-            title: "Ocean Breeze",
-            artist: "Aqua Sound",
-            album: "Natural Elements",
+      trend: "+8%"
+    },
+    {
+      id: 3,
+      title: "Ocean Breeze",
+      artist: "Aqua Sound",
+      album: "Natural Elements",
             duration: 208,
             plays: 3100000,
-            trend: "+15%"
-          },
-          {
-            id: 4,
-            title: "Midnight Drive",
-            artist: "Urban Pulse",
-            album: "City Lights",
+      trend: "+15%"
+    },
+    {
+      id: 4,
+      title: "Midnight Drive",
+      artist: "Urban Pulse",
+      album: "City Lights",
             duration: 243,
             plays: 1900000,
-            trend: "+6%"
-          },
-          {
-            id: 5,
-            title: "Fire & Ice",
-            artist: "Elemental",
-            album: "Contrasts",
+      trend: "+6%"
+    },
+    {
+      id: 5,
+      title: "Fire & Ice",
+      artist: "Elemental",
+      album: "Contrasts",
             duration: 231,
             plays: 2700000,
-            trend: "+18%"
-          }
+      trend: "+18%"
+    }
         ])
       } finally {
         setLoading(false)
@@ -73,6 +74,8 @@ export default function TrendingTracks() {
 
     loadTracks()
   }, [])
+
+  if (!mounted) return null;
 
   // Format duration helper
   const formatDuration = (seconds) => {

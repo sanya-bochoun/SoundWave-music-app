@@ -10,7 +10,6 @@ import AudioPlayer from './components/AudioPlayer'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import PWAStatus from './components/PWAStatus'
 import { supabase, musicAPI } from '../lib/supabase'
-import SupabaseTest from './components/SupabaseTest'
 
 export default function Home() {
   const [connectionStatus, setConnectionStatus] = useState('connecting')
@@ -30,7 +29,7 @@ export default function Home() {
         const songs = await musicAPI.getSongs()
         console.log('✅ Supabase connected! Songs:', songs)
         
-        // อัปเดต audio URLs สำหรับ demo
+        // Update audio URLs for demo
         try {
           await musicAPI.updateSampleAudioUrls()
           console.log('🎵 Audio URLs updated successfully')
@@ -53,39 +52,39 @@ export default function Home() {
       {/* Background Effects */}
       <div className="fixed inset-0 bg-black/20"></div>
       <div className="fixed inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-      
+        
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
+        </div>
 
       {/* Main Content */}
       <div className="relative z-10">
         <Header />
         {/* ทดสอบการเชื่อมต่อ Supabase */}
-        <div className="container mx-auto px-4 py-2">
+        {/* <div className="container mx-auto px-4 py-2">
           <SupabaseTest />
-        </div>
+        </div> */}
         {/* Connection Status */}
         <div className="container mx-auto px-4 py-2">
           <div className="text-center">
             {connectionStatus === 'connecting' && (
-              <div className="text-white/70 text-sm">🔄 กำลังเชื่อมต่อฐานข้อมูล...</div>
+              <div className="text-white/70 text-sm">🔄 Connecting to database...</div>
             )}
             {connectionStatus === 'connected' && (
-              <div className="text-green-400 text-sm">✅ เชื่อมต่อฐานข้อมูลสำเร็จ</div>
+              <div className="text-green-400 text-sm">✅ Database connected</div>
             )}
             {connectionStatus === 'error' && (
-              <div className="text-red-400 text-sm">❌ ไม่สามารถเชื่อมต่อฐานข้อมูลได้</div>
+              <div className="text-red-400 text-sm">❌ Could not connect to database</div>
             )}
           </div>
         </div>
 
-        <Hero />
-        <FeaturedPlaylists />
-        <TrendingTracks />
+          <Hero />
+          <FeaturedPlaylists />
+          <TrendingTracks />
         <Footer />
         
         {/* PWA Components */}
