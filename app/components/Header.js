@@ -1,11 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Menu, X, Music, Heart, User } from 'lucide-react'
+import { Search, Menu, X, Music, Heart, User, Download, Wifi, WifiOff } from 'lucide-react'
+import { usePWA } from '../../hooks/usePWA'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  
+  // PWA Hooks
+  const { isInstallable, isInstalled, isOnline, installApp } = usePWA()
+  // Auth Hooks
+  const { user, logout } = useAuth()
 
   return (
     <header className="relative z-50">
@@ -38,17 +45,54 @@ export default function Header() {
 
             {/* Navigation Links - Desktop */}
             <div className="hidden md:flex items-center space-x-6">
+              {/* Online/Offline Status */}
+              <div className="flex items-center space-x-1">
+                {isOnline ? (
+                  <Wifi className="h-4 w-4 text-green-400" />
+                ) : (
+                  <WifiOff className="h-4 w-4 text-red-400" />
+                )}
+                <span className={`text-sm ${isOnline ? 'text-green-400' : 'text-red-400'}`}>
+                  {isOnline ? 'Online' : 'Offline'}
+                </span>
+              </div>
+
+              {/* Install App Button */}
+              {isInstallable && !isInstalled && (
+                <button 
+                  onClick={installApp}
+                  className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full text-sm font-medium transition-all duration-300"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Install App</span>
+                </button>
+              )}
+
+              {/* App Installed Indicator */}
+              {isInstalled && (
+                <div className="flex items-center space-x-1 px-3 py-2 bg-green-500/20 border border-green-500/30 rounded-full">
+                  <Download className="h-4 w-4 text-green-400" />
+                  <span className="text-green-400 text-sm">App Installed</span>
+                </div>
+              )}
+
               <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center space-x-1">
                 <Heart className="h-4 w-4" />
                 <span>Favorites</span>
               </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center space-x-1">
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </a>
-              <button className="btn-primary">
-                Sign Up
-              </button>
+              {user ? (
+                <>
+                  <a href="/profile" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center space-x-1">
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </a>
+                  <button onClick={logout} className="ml-2 text-sm text-red-400 hover:underline">Log out</button>
+                </>
+              ) : (
+                <a href="/login" className="btn-primary">
+                  Login / Sign Up
+                </a>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -82,18 +126,23 @@ export default function Header() {
                   />
                 </div>
               </div>
-              
               <a href="#" className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-md transition-colors duration-300">
                 Favorites
               </a>
-              <a href="#" className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-md transition-colors duration-300">
-                Profile
-              </a>
-              <div className="px-3 py-2">
-                <button className="w-full btn-primary">
-                  Sign Up
-                </button>
-              </div>
+              {user ? (
+                <>
+                  <a href="/profile" className="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-md transition-colors duration-300">
+                    Profile
+                  </a>
+                  <button onClick={logout} className="block w-full text-left px-3 py-2 text-red-400 hover:underline">Log out</button>
+                </>
+              ) : (
+                <div className="px-3 py-2">
+                  <a href="/login" className="w-full btn-primary block text-center">
+                    เข้าสู่ระบบ / สมัครสมาชิก
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}

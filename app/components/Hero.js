@@ -3,12 +3,17 @@
 import { Play, Shuffle, Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { musicAPI } from '../../lib/supabase'
+import { useAudio } from '../../contexts/AudioContext'
 
 export default function Hero() {
   // เพิ่ม state สำหรับทดสอบ Supabase
   const [dbConnected, setDbConnected] = useState(false)
   const [sampleSongs, setSampleSongs] = useState([])
   const [connectionError, setConnectionError] = useState(null)
+  const [mounted, setMounted] = useState(false);
+  
+  // Audio context
+  const { actions: audioActions } = useAudio()
 
   // ทดสอบการเชื่อมต่อ Supabase
   useEffect(() => {
@@ -28,6 +33,9 @@ export default function Hero() {
 
     testConnection()
   }, [])
+
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
 
   return (
     <section className="relative py-20 lg:py-32 overflow-hidden">
@@ -142,24 +150,33 @@ export default function Hero() {
                   ) : (
                     // Fallback data ถ้าไม่เชื่อมต่อ database
                     [
-                      { title: "Electric Dreams", artist: "Neon Pulse", duration: "3:24" },
-                      { title: "Midnight Vibes", artist: "Luna Sound", duration: "4:12" },
-                      { title: "Digital Love", artist: "Cyber Hearts", duration: "3:45" },
-                    ].map((track, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-300 cursor-pointer">
-                        <div>
-                          <div className="font-medium">{track.title}</div>
-                          <div className="text-sm text-gray-400">{track.artist}</div>
-                        </div>
-                        <div className="text-sm text-gray-400">{track.duration}</div>
+                    { title: "Electric Dreams", artist: "Neon Pulse", duration: "3:24" },
+                    { title: "Midnight Vibes", artist: "Luna Sound", duration: "4:12" },
+                    { title: "Digital Love", artist: "Cyber Hearts", duration: "3:45" },
+                  ].map((track, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-300 cursor-pointer">
+                      <div>
+                        <div className="font-medium">{track.title}</div>
+                        <div className="text-sm text-gray-400">{track.artist}</div>
                       </div>
+                      <div className="text-sm text-gray-400">{track.duration}</div>
+                    </div>
                     ))
                   )}
                 </div>
 
-                <button className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-full transition-all duration-300 flex items-center justify-center space-x-2">
+                <button 
+                  onClick={() => {
+                    if (dbConnected && sampleSongs.length > 0) {
+                      // เล่นเพลงแรกใน Today's Mix
+                      audioActions.playTrack(sampleSongs[0], sampleSongs, 0)
+                    }
+                  }}
+                  disabled={!dbConnected || sampleSongs.length === 0}
+                  className="w-full mt-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-500 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-full transition-all duration-300 flex items-center justify-center space-x-2"
+                >
                   <Play className="h-5 w-5 fill-current" />
-                  <span>Play All</span>
+                  <span>{dbConnected ? 'Play All' : 'Loading...'}</span>
                 </button>
 
                 {/* Debug info */}

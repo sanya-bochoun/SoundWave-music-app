@@ -1,0 +1,36 @@
+{
+  "name": "SoundWave - Music Discovery App",
+  "short_name": "SoundWave",
+  "description": "Discover your next favorite song. Explore millions of tracks and create personalized playlists.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "categories": ["music", "entertainment"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+      "shortcuts": [
+      {
+        "name": "Discover Music",
+        "short_name": "Discover",
+        "description": "Find new music and trending tracks",
+        "url": "/?action=discover"
+      },
+      {
+        "name": "My Playlists",
+        "short_name": "Playlists",
+        "description": "Access your personal playlists",
+        "url": "/?action=playlists"
+      }
+    ],
+  "prefer_related_applications": false
+} 
